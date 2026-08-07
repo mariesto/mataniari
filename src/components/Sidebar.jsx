@@ -1,6 +1,7 @@
 import { Box, Flex, Text, VStack } from '@chakra-ui/react'
 import { T, FONTS } from '../theme/tokens'
 import InfoTip from './InfoTip'
+import Typography from './Typography'
 
 // Sidebar gelap → semua teks di dalamnya terang (gate kontras, tidak boleh gelap-di-gelap).
 
@@ -111,6 +112,8 @@ export default function Sidebar({
           for the Ghostty terminal
         </Text>
       </Box>
+
+      <Typography />
 
       <Box mb="16px">
         <Judul tip="One theme: your terminal always looks the same. Follow light and dark: the terminal switches by itself, depending on whether your computer is in light or dark mode.">

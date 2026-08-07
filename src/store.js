@@ -37,6 +37,7 @@ function fillColors(raw, base) {
 }
 
 let syncTimer = null // debounce for live-preview pushes
+let fontTimer = null // debounce for font-size changes
 
 export const useStore = create(
   persist(
@@ -55,6 +56,13 @@ export const useStore = create(
       favs: [],
       busy: false,
 
+      // ---- fonts (global terminal settings) ----
+      fonts: [], // available families from `ghostty +list-fonts`
+      fontFamily: '', // '' = system default
+      fontSize: null, // null = unset (use Ghostty's default); a number once chosen
+      fontBusy: false,
+      fontError: null,
+
       init: async () => {
         try {
           const [themes, state] = await Promise.all([api.listThemes(), api.readState()])
@@ -63,6 +71,8 @@ export const useStore = create(
             loaded: true,
             current: state.current,
             configExists: state.configExists,
+            fontFamily: (state.font && state.font.family) || '',
+            fontSize: (state.font && state.font.size) || null,
           }
           if (state.current.mode === 'split') {
             patch.mode = 'split'
@@ -70,6 +80,11 @@ export const useStore = create(
             patch.slotDark = state.current.dark
           }
           set(patch)
+          // Font list + orphan status are optional extras — don't block the initial render.
+          api
+            .listFonts()
+            .then((r) => set({ fonts: (r && r.fonts) || [] }))
+            .catch(() => {})
           try {
             const ps = await api.previewStatus()
             if (ps && ps.orphaned) set({ previewOrphaned: true, orphanColors: ps.previewColors || null })
@@ -86,6 +101,24 @@ export const useStore = create(
       setFilter: (f) => set({ filter: f }),
       setMode: (m) => set({ mode: m }),
       setActiveSlot: (s) => set({ activeSlot: s }),
+
+      // ---- fonts ----
+      setFontFamily: (family) => {
+        set({ fontFamily: family })
+        get().applyFontNow()
+      },
+      setFontSize: (size) => {
+        set({ fontSize: size })
+        if (fontTimer) clearTimeout(fontTimer)
+        fontTimer = setTimeout(() => get().applyFontNow(), 250)
+      },
+      applyFontNow: async () => {
+        set({ fontBusy: true, fontError: null })
+        const res = await api.applyFont({ family: get().fontFamily, size: get().fontSize })
+        set({ fontBusy: false })
+        if (!res.ok) set({ fontError: res.alasan || 'Could not apply font.' })
+        return res
+      },
 
       toggleFav: (name) =>
         set((s) => ({

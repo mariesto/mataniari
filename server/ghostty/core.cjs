@@ -114,21 +114,41 @@ function parseThemeLine(value) {
   return res
 }
 
+// Current primary font-family + font-size from the config (defaults left to the UI).
+function parseFont(text) {
+  let family = null
+  let size = null
+  for (const raw of text.split('\n')) {
+    const line = raw.trim()
+    const mf = line.match(/^font-family\s*=\s*(.+)$/)
+    if (mf) {
+      const v = mf[1].trim().replace(/^["']|["']$/g, '')
+      if (v && !family) family = v // first non-empty = primary
+    }
+    const ms = line.match(/^font-size\s*=\s*([\d.]+)/)
+    if (ms) size = Number(ms[1]) // last one wins
+  }
+  return { family, size }
+}
+
 function readState() {
   const { path: configPath, exists } = resolveConfigPath()
-  if (!exists) return { configExists: false, current: parseThemeLine(null), configPath }
+  const noFont = { family: null, size: null }
+  if (!exists) {
+    return { configExists: false, current: parseThemeLine(null), font: noFont, configPath }
+  }
   let text = ''
   try {
     text = fs.readFileSync(configPath, 'utf8')
   } catch {
-    return { configExists: true, current: parseThemeLine(null), configPath }
+    return { configExists: true, current: parseThemeLine(null), font: noFont, configPath }
   }
   let value = null
   for (const raw of text.split('\n')) {
     const line = raw.trim()
     if (/^theme\s*=/.test(line)) value = line.replace(/^theme\s*=\s*/, '')
   }
-  return { configExists: true, current: parseThemeLine(value), configPath }
+  return { configExists: true, current: parseThemeLine(value), font: parseFont(text), configPath }
 }
 
 module.exports = {

@@ -32,15 +32,18 @@ The migration mental model: **Electron main process → Fastify server**, and
     `deleteCustomTheme` (name-sanitized; edit backups go to a `.gtc-backups/` subdir, not the theme list).
   - `apply.cjs` — commit a preset (`theme = …` single or `light:A,dark:B`).
   - `preview.cjs` — live-preview session machine (start/update/commit/cancel/status/resolveOrphaned).
+  - `fonts.cjs` — enumerate families (`ghostty +list-fonts` via the resolved app binary) and write
+    the primary `font-family` + `font-size` (global keys, not part of a theme).
   - `reload.cjs` — the swappable "reload Ghostty" trigger.
-- `server/routes/` — `themes.cjs`, `custom.cjs`, `preview.cjs` (thin Fastify plugins over the above).
+- `server/routes/` — `themes.cjs`, `custom.cjs`, `preview.cjs`, `fonts.cjs` (thin Fastify plugins).
 - `src/` — React app (Vite + Chakra UI + Zustand):
   - `api.js` — fetch wrapper (sends the launch token). Replaces the old preload bridge.
   - `store.js` — Zustand store. Theme list/apply state **and** the editor/preview slice.
   - `App.jsx` — layout, grid, top bar, the orphan-recovery banner, and the editor toggle.
   - `components/TerminalPreview.jsx` — the mock-terminal renderer, shared by cards (`sm`) and the
     editor (`lg`). Takes `t = { background, foreground, cursor, selBg, selFg, palette[16] }`.
-  - `components/ThemeCard.jsx`, `Sidebar.jsx`, `InfoTip.jsx`.
+  - `components/ThemeCard.jsx`, `Sidebar.jsx`, `InfoTip.jsx`, `Typography.jsx` (font family/size,
+    lives in the sidebar; store-connected).
   - `components/editor/` — `ThemeEditor`, `ColorSlot`, `ColorPickerPopover` (react-colorful),
     `PaletteGrid`, `ContrastReadout`, `EditorPreviewPane`.
   - `theme/tokens.js` (design tokens + `contrast`/`luminance`), `theme/chakraTheme.js`.
@@ -91,6 +94,11 @@ The migration mental model: **Electron main process → Fastify server**, and
 - **Raw vs filled palette.** `collectThemes` fills missing palette slots for previews; when editing a
   custom theme, seed the draft from the **raw** file (`readCustomThemeRaw`) so synthetic fills aren't saved.
 - **Backup timestamps** include milliseconds so rapid successive applies don't collide onto one file.
+- **`ghostty` CLI often isn't on PATH** for a GUI-launched server. `fonts.ghosttyBin()` resolves the
+  app binary (`/Applications/Ghostty.app/Contents/MacOS/ghostty`, or `$GHOSTTY_BIN`) before calling
+  `+list-fonts`. `+list-fonts` lists monospace families and has no `--plain` flag.
+- **font-size reload** applies to already-open windows only on Ghostty ≥ 1.2.1, and not to windows the
+  user manually zoomed (⌘0 resets those). `font-family` reloads live on ≥ 1.2.0.
 
 ## Security
 

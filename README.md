@@ -45,6 +45,8 @@ play — instant, reversible, and honest about what you'll actually get.
 - **Create & edit custom themes** — a full editor with color-wheel pickers for the font color,
   background, cursor, selection, and all 16 ANSI "code colors". Save it as a reusable theme file.
 - **Override colors on any preset** — start from a theme and tweak individual colors on top of it.
+- **Font family & size** — pick your terminal font (from `ghostty +list-fonts`) and size in the
+  sidebar; applies live to your open windows too.
 - **Live preview, two ways** — the in-app mock terminal updates instantly as you tune, and (with the
   **Live in terminal** switch on) your real open Ghostty windows recolor too, debounced.
 - **Search, filter, favorites** — by name; narrow to dark/light/favorites.

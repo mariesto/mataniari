@@ -44,4 +44,7 @@ export const api = {
   previewCancel: (sessionId) => call('/api/preview/cancel', { method: 'POST', body: { sessionId } }),
   previewStatus: () => call('/api/preview/status'),
   previewResolve: (keep) => call('/api/preview/resolve', { method: 'POST', body: { keep } }),
+
+  listFonts: () => call('/api/fonts'),
+  applyFont: (payload) => call('/api/font', { method: 'POST', body: payload }),
 }

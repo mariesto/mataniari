@@ -20,6 +20,7 @@ const TOKEN = crypto.randomBytes(24).toString('hex')
 const themesRoutes = require('./routes/themes.cjs')
 const customRoutes = require('./routes/custom.cjs')
 const previewRoutes = require('./routes/preview.cjs')
+const fontRoutes = require('./routes/fonts.cjs')
 
 function isLocalHost(hostHeader) {
   if (!hostHeader) return false
@@ -46,6 +47,7 @@ async function build() {
   await app.register(themesRoutes)
   await app.register(customRoutes)
   await app.register(previewRoutes)
+  await app.register(fontRoutes)
 
   if (distBuilt) {
     // Static assets (JS/CSS/fonts). index:false so we can inject the token into index.html.
