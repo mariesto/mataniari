@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+
+# berkas kerja lokal — tidak ikut ke repo publik
+docs/
+test/
+assets/buat-ikon.py
+assets/ikon-256.png
